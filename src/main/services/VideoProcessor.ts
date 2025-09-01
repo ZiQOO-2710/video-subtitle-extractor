@@ -9,11 +9,30 @@ if (process.platform === 'win32') {
   // Windows에서는 내장된 FFmpeg 사용
   ffmpegPath = path.join(process.resourcesPath || __dirname, '../../../bin/win32/ffmpeg.exe');
   if (!fs.existsSync(ffmpegPath)) {
-    // 개발 모드에서는 npm 패키지 사용
-    ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+    // 개발 모드에서는 프로젝트 내 바이너리 사용
+    ffmpegPath = path.join(__dirname, '../../../bin/win32/ffmpeg.exe');
+    if (!fs.existsSync(ffmpegPath)) {
+      // 프로젝트 루트에서 찾기
+      ffmpegPath = path.join(process.cwd(), 'bin/win32/ffmpeg.exe');
+      if (!fs.existsSync(ffmpegPath)) {
+        // ffmpeg-installer 패키지 사용 시도
+        try {
+          ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+        } catch (error) {
+          console.error('FFmpeg not found. Please install FFmpeg in bin/win32/ folder');
+          // 시스템 PATH에서 ffmpeg 찾기 시도
+          ffmpegPath = 'ffmpeg';
+        }
+      }
+    }
   }
 } else {
-  ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+  try {
+    ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+  } catch (error) {
+    // 시스템 PATH에서 ffmpeg 사용
+    ffmpegPath = 'ffmpeg';
+  }
 }
 
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -49,6 +68,8 @@ export class VideoProcessor {
    */
   async getVideoInfo(videoPath: string): Promise<VideoInfo> {
     return new Promise((resolve, reject) => {
+      console.log(`동영상 정보 조회: ${videoPath}`);
+      
       ffmpeg.ffprobe(videoPath, (err: any, metadata: any) => {
         if (err) {
           reject(new Error(`비디오 정보 추출 실패: ${err.message}`));

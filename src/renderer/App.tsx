@@ -29,6 +29,7 @@ interface Settings {
   language: string;
   translationTarget: string;
   outputFormat: 'srt' | 'vtt' | 'txt';
+  outputFolder: string;
 }
 
 function App() {
@@ -42,10 +43,11 @@ function App() {
     totalSteps: 4
   });
   const [settings, setSettings] = useState<Settings>({
-    speechModel: 'base',
+    speechModel: 'tiny',  // 기본값을 tiny로 변경 (3-5배 빠름)
     language: 'ja',
     translationTarget: 'ko',
-    outputFormat: 'srt'
+    outputFormat: 'srt',
+    outputFolder: ''  // 빈 문자열 = 동영상과 같은 폴더
   });
   const [results, setResults] = useState<{
     originalSrt?: string;
@@ -118,7 +120,8 @@ function App() {
       const transcriptionResult = await window.electronAPI.speechToText(audioPath, {
         language: settings.language,
         model: settings.speechModel,
-        outputFormat: settings.outputFormat
+        outputFormat: settings.outputFormat,
+        outputFolder: settings.outputFolder
       });
       
       console.log('음성 인식 완료:', transcriptionResult);

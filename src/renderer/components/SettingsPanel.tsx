@@ -5,6 +5,7 @@ interface Settings {
   language: string;
   translationTarget: string;
   outputFormat: 'srt' | 'vtt' | 'txt';
+  outputFolder: string;
 }
 
 interface SettingsPanelProps {
@@ -18,6 +19,17 @@ function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps) {
       ...settings,
       [key]: value
     });
+  };
+
+  const handleSelectOutputFolder = async () => {
+    try {
+      const folderPath = await window.electronAPI.selectOutputFolder();
+      if (folderPath) {
+        handleChange('outputFolder', folderPath);
+      }
+    } catch (error) {
+      console.error('폴더 선택 실패:', error);
+    }
   };
 
   const modelInfo = {
@@ -38,8 +50,8 @@ function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps) {
           value={settings.speechModel}
           onChange={(e) => handleChange('speechModel', e.target.value)}
         >
-          <option value="tiny">Tiny - {modelInfo.tiny.size} (매우 빠름, 기본 품질)</option>
-          <option value="base">Base - {modelInfo.base.size} (빠름, 좋은 품질) 권장</option>
+          <option value="tiny">⚡ Tiny - {modelInfo.tiny.size} (매우 빠름, 기본 품질) 권장</option>
+          <option value="base">Base - {modelInfo.base.size} (빠름, 좋은 품질)</option>
           <option value="small">Small - {modelInfo.small.size} (보통, 매우 좋은 품질)</option>
           <option value="medium">Medium - {modelInfo.medium.size} (느림, 우수한 품질)</option>
           <option value="large">Large - {modelInfo.large.size} (매우 느림, 최고 품질)</option>
@@ -103,6 +115,43 @@ function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps) {
         </select>
         <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
           SRT 형식을 권장합니다 (대부분의 플레이어 지원)
+        </div>
+      </div>
+
+      {/* 저장 폴더 선택 */}
+      <div className="setting-item">
+        <label className="setting-label">📁 저장 폴더</label>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <input 
+            type="text" 
+            value={settings.outputFolder || '동영상과 같은 폴더'}
+            readOnly
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              backgroundColor: '#f5f5f5',
+              fontSize: '14px'
+            }}
+          />
+          <button 
+            onClick={handleSelectOutputFolder}
+            style={{
+              padding: '8px 15px',
+              backgroundColor: '#007acc',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            폴더 선택
+          </button>
+        </div>
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+          자막 파일이 저장될 폴더를 선택하세요 (미선택 시 동영상과 같은 폴더)
         </div>
       </div>
     </div>

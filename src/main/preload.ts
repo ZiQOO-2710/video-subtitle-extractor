@@ -4,6 +4,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld('electronAPI', {
   // 파일 선택
   selectVideoFile: () => ipcRenderer.invoke('select-video-file'),
+  selectOutputFolder: () => ipcRenderer.invoke('select-output-folder'),
   
   // 동영상 처리
   getVideoInfo: (videoPath: string) => ipcRenderer.invoke('get-video-info', videoPath),
@@ -36,6 +37,7 @@ declare global {
   interface Window {
     electronAPI: {
       selectVideoFile: () => Promise<string | null>;
+      selectOutputFolder: () => Promise<string | null>;
       getVideoInfo: (videoPath: string) => Promise<any>;
       extractAudio: (videoPath: string, outputPath: string) => Promise<string>;
       speechToText: (audioPath: string, options: any) => Promise<any>;
